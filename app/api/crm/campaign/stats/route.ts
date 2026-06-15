@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
             status: c.status,
             createdAt: c.createdAt,
             stats: { pending, sent, delivered, failed, total: c.size },
+            rules: c.audienceRules,
+            generatedMessage: c.generatedMessage,
           };
         })
       );
@@ -65,6 +67,8 @@ export async function GET(req: NextRequest) {
         status: campaign.status,
         createdAt: campaign.createdAt,
         stats: { pending, sent, delivered, failed, total: campaign.size },
+        rules: campaign.audienceRules,
+        generatedMessage: campaign.generatedMessage,
       },
     });
   } catch (error) {
