@@ -10,6 +10,7 @@ import {
   Home,
   History,
   X,
+  LogOut,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -27,6 +28,18 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+
+  async function handleLogout() {
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        window.location.href = "/login";
+      }
+    } catch {
+      window.location.href = "/login";
+    }
+  }
 
   return (
     <aside className={`fixed left-0 top-0 h-full w-64 flex flex-col bg-sidebar border-r border-border/80 z-50 transition-transform duration-300 md:translate-x-0 ${
@@ -82,14 +95,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="px-6 py-5 border-t border-border/50 flex items-center justify-between">
-        <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
-          v1.0.0 · Production
-        </span>
-        <span className="flex h-2 w-2 relative">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-        </span>
+      <div className="px-6 py-5 border-t border-border/50 space-y-4">
+        <button
+          onClick={handleLogout}
+          className="nav-item flex items-center gap-3 px-3.5 py-2 rounded-xl text-xs font-semibold tracking-wide uppercase border border-border/60 hover:bg-red-500/5 hover:text-red-500 hover:border-red-500/20 w-full transition-all text-muted-foreground cursor-pointer"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Sign Out Session
+        </button>
+
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+            v1.0.0 · Production
+          </span>
+          <span className="flex h-2 w-2 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+        </div>
       </div>
     </aside>
   );
