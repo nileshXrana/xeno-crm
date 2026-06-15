@@ -141,18 +141,6 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-        
-        {/* Gateway System Status Indicator */}
-        <div className="flex items-center gap-3 px-4 py-2 bg-secondary/30 border border-border/80 rounded-xl">
-          <div className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Webhook Ingestion</p>
-            <p className="text-xs font-semibold text-emerald-500 mt-1 leading-none">Healthy & Active</p>
-          </div>
-        </div>
       </div>
 
       {/* Stats Cards Section */}
