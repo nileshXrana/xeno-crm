@@ -4,6 +4,18 @@ An AI-native CRM built for consumer brands to segment shoppers and dispatch high
 
 ---
 
+## Application Previews
+
+| Control Panel Dashboard | Shopper Segment Registry |
+| :---: | :---: |
+| ![Dashboard](/dashboard.png) | ![Customers](/customers.png) |
+
+| AI co-pilot & WhatsApp Mockup | Ingestion Telemetry Analytics |
+| :---: | :---: |
+| ![Campaign Builder](/campaign_builder.png) | ![Analytics](/analytics.png) |
+
+---
+
 ## Tech Stack
 * **Framework:** Next.js (App Router)
 * **Language:** TypeScript
