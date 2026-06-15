@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AudienceBuilder from "@/components/AudienceBuilder";
+import AudiencePreview from "@/components/AudiencePreview";
 
 interface Rule {
   id: string;
@@ -67,6 +68,7 @@ export default function CampaignsPage() {
     },
   ]);
   const [audienceCount, setAudienceCount] = useState<number | null>(null);
+  const [sampleCustomers, setSampleCustomers] = useState<Array<{_id: string; name: string; email: string; totalSpends: number; visits: number}>>([]);
   const [checkingAudience, setCheckingAudience] = useState(false);
 
   const [intent, setIntent] = useState("");
@@ -100,6 +102,7 @@ export default function CampaignsPage() {
       const data = await res.json();
       if (data.success) {
         setAudienceCount(data.count);
+        setSampleCustomers(data.sampleCustomers ?? []);
       }
     } catch (err) {
       console.error("Audience check failed:", err);
@@ -222,6 +225,13 @@ export default function CampaignsPage() {
           checkingAudience={checkingAudience}
           onCheckAudience={handleCheckAudience}
         />
+
+        {audienceCount !== null && sampleCustomers.length > 0 && (
+          <AudiencePreview
+            sampleCustomers={sampleCustomers}
+            totalCount={audienceCount}
+          />
+        )}
 
         {audienceCount !== null && currentStep === 1 && (
           <div className="mt-4 pt-4 border-t border-border flex justify-end">
