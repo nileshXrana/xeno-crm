@@ -78,7 +78,7 @@ We appreciate your loyalty and can't wait to serve you again! 💛
 
 Team Xeno CRM`;
     } else {
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const result = await model.generateContent(prompt);
       const response = result.response;
       generatedMessage = response.text().trim();
