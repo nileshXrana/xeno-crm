@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import HealthIndicator from "@/components/HealthIndicator";
 import {
   Users,
   Megaphone,
@@ -77,7 +78,8 @@ export default function Sidebar() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t border-border">
+      <div className="px-4 py-4 border-t border-border space-y-2">
+        <HealthIndicator />
         <p className="text-xs text-muted-foreground">
           v1.0.0 · AI-Native CRM
         </p>
