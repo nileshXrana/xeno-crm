@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
 import CommunicationMessage from "@/models/CommunicationMessage";
+import Campaign from "@/models/Campaign";
 
 /**
  * POST /api/crm/webhooks/delivery
@@ -10,7 +11,9 @@ import CommunicationMessage from "@/models/CommunicationMessage";
  *
  * Body: { messageId: string, status: "DELIVERED" | "FAILED", failureReason?: string }
  *
- * Updates the CommunicationMessage document in MongoDB with the final status.
+ * 1. Updates the CommunicationMessage document in MongoDB with the final status.
+ * 2. Checks if ALL messages for the campaign are processed (no PENDING/SENT remaining).
+ * 3. If all messages are done, marks the Campaign as "SENT".
  */
 export async function POST(req: NextRequest) {
   try {
@@ -55,6 +58,24 @@ export async function POST(req: NextRequest) {
     console.log(
       `[WEBHOOK] ✅ Message ${messageId} updated to status: ${status} for customer: ${updated.customerId}`
     );
+
+    // Check if all messages for this campaign are finalized (no PENDING or SENT remaining)
+    const campaignId = updated.campaignId;
+    const remainingCount = await CommunicationMessage.countDocuments({
+      campaignId,
+      status: { $in: ["PENDING", "SENT"] },
+    });
+
+    if (remainingCount === 0) {
+      await Campaign.findByIdAndUpdate(campaignId, { $set: { status: "SENT" } });
+      console.log(
+        `[WEBHOOK] 🏁 Campaign ${campaignId} fully processed — status updated to SENT.`
+      );
+    } else {
+      console.log(
+        `[WEBHOOK] ⏳ Campaign ${campaignId} still has ${remainingCount} messages in-flight.`
+      );
+    }
 
     return Response.json({ success: true, messageId, status });
   } catch (error) {
