@@ -8,11 +8,11 @@ An AI-native CRM built for consumer brands to segment shoppers and dispatch high
 
 | Control Panel Dashboard | Shopper Segment Registry |
 | :---: | :---: |
-| ![Dashboard](/dashboard.png) | ![Customers](/customers.png) |
+| ![Dashboard](public/dashboard.png) | ![Customers](public/customers.png) |
 
 | AI co-pilot & WhatsApp Mockup | Ingestion Telemetry Analytics |
 | :---: | :---: |
-| ![Campaign Builder](/campaign_builder.png) | ![Analytics](/analytics.png) |
+| ![Campaign Builder](public/campaign_builder.png) | ![Analytics](public/analytics.png) |
 
 ---
 
