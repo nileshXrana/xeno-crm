@@ -7,7 +7,6 @@ import {
   Users,
   Megaphone,
   BarChart3,
-  Database,
   Zap,
   Home,
   History,
@@ -65,19 +64,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Seed Data Button */}
-      <div className="px-3 pb-4 border-t border-border pt-4">
-        <a
-          href="/api/seed"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-all w-full"
-        >
-          <Database className="w-3.5 h-3.5" />
-          Seed Demo Data
-        </a>
-      </div>
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-border space-y-2">

@@ -6,13 +6,10 @@ import {
   Megaphone,
   CheckCircle2,
   XCircle,
-  TrendingUp,
   ArrowRight,
-  RefreshCw,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 
 interface DashboardStats {
   totalCampaigns: number;
@@ -70,8 +67,6 @@ function StatCard({
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMessage, setSeedMessage] = useState("");
 
   async function loadStats() {
     try {
@@ -107,21 +102,6 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleSeed() {
-    setSeeding(true);
-    setSeedMessage("");
-    try {
-      const res = await fetch("/api/seed");
-      const data = await res.json();
-      setSeedMessage(data.message ?? "Seeded successfully!");
-      await loadStats();
-    } catch {
-      setSeedMessage("Seed failed. Check MongoDB connection.");
-    } finally {
-      setSeeding(false);
-    }
-  }
-
   useEffect(() => {
     loadStats();
   }, []);
@@ -131,7 +111,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
             <Zap className="w-5 h-5 text-primary" />
           </div>
           <div>
@@ -143,35 +123,6 @@ export default function DashboardPage() {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* Seed Data CTA */}
-      <div className="glass-card p-5 mb-8 border border-primary/20 bg-primary/5 flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <p className="text-sm font-semibold text-foreground">
-            🚀 First time? Seed demo data to get started.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Inserts 20 realistic customers and 50 orders into your MongoDB Atlas cluster.
-          </p>
-          {seedMessage && (
-            <p className="text-xs text-primary mt-2 font-medium">{seedMessage}</p>
-          )}
-        </div>
-        <Button
-          onClick={handleSeed}
-          disabled={seeding}
-          variant="outline"
-          size="sm"
-          className="border-primary/40 hover:bg-primary/10 text-primary"
-        >
-          {seeding ? (
-            <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />
-          ) : (
-            <TrendingUp className="w-3.5 h-3.5 mr-2" />
-          )}
-          {seeding ? "Seeding..." : "Seed Demo Data"}
-        </Button>
       </div>
 
       {/* Stats Grid */}
@@ -187,28 +138,28 @@ export default function DashboardPage() {
             label="Total Campaigns"
             value={stats?.totalCampaigns ?? 0}
             icon={Megaphone}
-            color="bg-primary/20 text-primary"
+            color="bg-primary/10 text-primary"
             delay={0}
           />
           <StatCard
             label="Messages Delivered"
             value={stats?.totalDelivered ?? 0}
             icon={CheckCircle2}
-            color="bg-green-500/20 text-green-400"
+            color="bg-green-100 text-green-600"
             delay={80}
           />
           <StatCard
             label="Messages Failed"
             value={stats?.totalFailed ?? 0}
             icon={XCircle}
-            color="bg-red-500/20 text-red-400"
+            color="bg-red-100 text-red-500"
             delay={160}
           />
           <StatCard
             label="Pending Delivery"
             value={stats?.totalPending ?? 0}
             icon={Users}
-            color="bg-yellow-500/20 text-yellow-400"
+            color="bg-amber-100 text-amber-600"
             delay={240}
           />
         </div>
@@ -217,12 +168,12 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Link href="/campaigns" className="block">
-          <div className="glass-card p-6 hover:border-primary/40 transition-colors cursor-pointer group">
+          <div className="glass-card p-6 hover:border-primary/40 transition-all cursor-pointer group">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Megaphone className="w-5 h-5 text-primary" />
               </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
             </div>
             <h3 className="text-base font-semibold text-foreground mb-1">
               Create Campaign
@@ -234,12 +185,12 @@ export default function DashboardPage() {
         </Link>
 
         <Link href="/customers" className="block">
-          <div className="glass-card p-6 hover:border-primary/40 transition-colors cursor-pointer group">
+          <div className="glass-card p-6 hover:border-primary/40 transition-all cursor-pointer group">
             <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Users className="w-5 h-5 text-accent" />
               </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors" />
+              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
             </div>
             <h3 className="text-base font-semibold text-foreground mb-1">
               Browse Customers
@@ -274,7 +225,7 @@ export default function DashboardPage() {
               return (
                 <div
                   key={c.campaignId}
-                  className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
                 >
                   <div className="flex-1 min-w-0 mr-4">
                     <p className="text-sm font-medium text-foreground truncate">
