@@ -9,12 +9,14 @@ import {
   Database,
   Zap,
   Home,
+  History,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: Home },
   { href: "/customers", label: "Customers", icon: Users },
-  { href: "/campaigns", label: "Campaigns", icon: Megaphone },
+  { href: "/campaigns", label: "New Campaign", icon: Megaphone },
+  { href: "/campaigns/history", label: "History", icon: History },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
