@@ -174,7 +174,7 @@ export default function CampaignsPage() {
   }
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div className="p-4 md:p-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
@@ -189,7 +189,7 @@ export default function CampaignsPage() {
       </div>
 
       {/* Step Indicator */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-8">
         <StepIndicator step={1} current={currentStep} />
         <ChevronRight className="w-4 h-4 text-muted-foreground" />
         <StepIndicator step={2} current={currentStep} />
@@ -275,7 +275,7 @@ export default function CampaignsPage() {
               <label className="text-xs text-muted-foreground mb-1.5 block">
                 Campaign Intent
               </label>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Input
                   value={intent}
                   onChange={(e) => setIntent(e.target.value)}
@@ -286,7 +286,7 @@ export default function CampaignsPage() {
                 <Button
                   onClick={handleGenerateMessage}
                   disabled={generatingMessage || !intent.trim()}
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground whitespace-nowrap"
+                  className="bg-accent hover:bg-accent/90 text-accent-foreground whitespace-nowrap w-full sm:w-auto"
                 >
                   {generatingMessage ? (
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />

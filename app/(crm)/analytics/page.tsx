@@ -151,7 +151,7 @@ function CampaignRow({ campaign }: { campaign: CampaignStat }) {
       {/* Expanded stats */}
       {expanded && (
         <div className="px-4 pb-4 border-t border-border/50 animate-fade-in">
-          <div className="grid grid-cols-4 gap-3 mt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
             <div className="text-center p-3 bg-secondary/50 rounded-xl">
               <div className="flex items-center justify-center gap-1 mb-1">
                 <Clock className="w-3.5 h-3.5 text-yellow-400" />
@@ -260,9 +260,9 @@ export default function AnalyticsPage() {
     grandTotal > 0 ? Math.round((totalDelivered / grandTotal) * 100) : 0;
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div className="p-4 md:p-8 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-primary" />
@@ -279,7 +279,7 @@ export default function AnalyticsPage() {
           disabled={refreshing}
           variant="outline"
           size="sm"
-          className="border-border hover:bg-secondary"
+          className="border-border hover:bg-secondary w-full sm:w-auto"
         >
           <RefreshCw
             className={`w-3.5 h-3.5 mr-2 ${refreshing ? "animate-spin" : ""}`}
@@ -294,7 +294,7 @@ export default function AnalyticsPage() {
           <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3">
             All Campaigns · Overall Performance
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Campaigns</p>
               <p className="text-2xl font-bold text-foreground">{campaigns.length}</p>

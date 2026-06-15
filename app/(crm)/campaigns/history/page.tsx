@@ -37,8 +37,8 @@ export default function CampaignHistoryPage() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="p-8 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 md:p-8 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
             <History className="w-5 h-5 text-primary" />
@@ -48,13 +48,13 @@ export default function CampaignHistoryPage() {
             <p className="text-sm text-muted-foreground">{campaigns.length} campaigns sent</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={load} variant="outline" size="sm" disabled={loading} className="border-border">
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+          <Button onClick={load} variant="outline" size="sm" disabled={loading} className="border-border flex-1 sm:flex-none">
             <RefreshCw className={`w-3.5 h-3.5 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Link href="/campaigns">
-            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
+          <Link href="/campaigns" className="flex-1 sm:flex-none">
+            <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full">
               <Megaphone className="w-3.5 h-3.5 mr-2" />
               New Campaign
             </Button>
@@ -79,7 +79,8 @@ export default function CampaignHistoryPage() {
         </div>
       ) : (
         <div className="glass-card overflow-hidden">
-          <table className="w-full">
+          <div className="w-full overflow-x-auto">
+            <table className="w-full">
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left p-4 text-xs text-muted-foreground uppercase tracking-wider">Campaign</th>
@@ -130,7 +131,8 @@ export default function CampaignHistoryPage() {
                 );
               })}
             </tbody>
-          </table>
+            </table>
+          </div>
         </div>
       )}
     </div>

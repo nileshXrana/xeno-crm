@@ -75,7 +75,7 @@ export default function CustomersPage() {
       : "0";
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div className="p-4 md:p-8 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center">
@@ -90,7 +90,7 @@ export default function CustomersPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="glass-card p-4">
           <div className="flex items-center gap-2 mb-1">
             <Users className="w-4 h-4 text-accent" />
@@ -143,7 +143,8 @@ export default function CustomersPage() {
             </p>
           </div>
         ) : (
-          <Table>
+          <div className="w-full overflow-x-auto">
+            <Table>
             <TableHeader>
               <TableRow className="border-border hover:bg-transparent">
                 <TableHead className="text-muted-foreground text-xs uppercase">Name</TableHead>
@@ -195,7 +196,8 @@ export default function CustomersPage() {
                 </TableRow>
               ))}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         )}
       </div>
     </div>

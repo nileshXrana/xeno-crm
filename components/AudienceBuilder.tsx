@@ -103,56 +103,62 @@ export default function AudienceBuilder({
               </div>
             )}
 
-            <div className="flex items-center gap-2 p-3 bg-secondary/50 rounded-xl border border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3.5 bg-secondary/50 rounded-xl border border-border/50">
               {/* Field selector */}
-              <Select
-                value={rule.field}
-                onValueChange={(v) => v && updateRule(rule.id, "field", v)}
-              >
-                <SelectTrigger className="flex-1 bg-secondary border-border text-sm h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  {FIELDS.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex-1 w-full">
+                <Select
+                  value={rule.field}
+                  onValueChange={(v) => v && updateRule(rule.id, "field", v)}
+                >
+                  <SelectTrigger className="w-full bg-secondary border-border text-sm h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    {FIELDS.map((f) => (
+                      <SelectItem key={f.value} value={f.value}>
+                        {f.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Operator selector */}
-              <Select
-                value={rule.operator}
-                onValueChange={(v) => v && updateRule(rule.id, "operator", v)}
-              >
-                <SelectTrigger className="w-44 bg-secondary border-border text-sm h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  {OPERATORS.map((op) => (
-                    <SelectItem key={op.value} value={op.value}>
-                      {op.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="w-full sm:w-44">
+                <Select
+                  value={rule.operator}
+                  onValueChange={(v) => v && updateRule(rule.id, "operator", v)}
+                >
+                  <SelectTrigger className="w-full bg-secondary border-border text-sm h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover border-border">
+                    {OPERATORS.map((op) => (
+                      <SelectItem key={op.value} value={op.value}>
+                        {op.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
               {/* Value input */}
-              <Input
-                value={rule.value}
-                onChange={(e) => updateRule(rule.id, "value", e.target.value)}
-                placeholder={rule.field === "lastVisitDate" ? "YYYY-MM-DD" : "Enter value"}
-                className="w-36 bg-secondary border-border text-sm h-9"
-                type={rule.field === "lastVisitDate" ? "date" : "number"}
-              />
+              <div className="w-full sm:w-36">
+                <Input
+                  value={rule.value}
+                  onChange={(e) => updateRule(rule.id, "value", e.target.value)}
+                  placeholder={rule.field === "lastVisitDate" ? "YYYY-MM-DD" : "Enter value"}
+                  className="w-full bg-secondary border-border text-sm h-9"
+                  type={rule.field === "lastVisitDate" ? "date" : "number"}
+                />
+              </div>
 
               {/* Remove button */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => removeRule(rule.id)}
-                className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 self-end sm:self-auto flex-shrink-0"
               >
                 <Trash2 className="w-4 h-4" />
               </Button>

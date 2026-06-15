@@ -9,6 +9,7 @@ import {
   Zap,
   Home,
   History,
+  X,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -19,11 +20,18 @@ const NAV_ITEMS = [
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 flex flex-col bg-sidebar border-r border-border z-40">
+    <aside className={`fixed left-0 top-0 h-full w-64 flex flex-col bg-sidebar border-r border-border z-50 transition-transform duration-300 md:translate-x-0 ${
+      isOpen ? "translate-x-0" : "-translate-x-full"
+    }`}>
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5 border-b border-border">
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -33,6 +41,14 @@ export default function Sidebar() {
           <p className="text-sm font-bold text-foreground tracking-tight">Xeno CRM</p>
           <p className="text-xs text-muted-foreground">AI-Native</p>
         </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="md:hidden ml-auto p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -46,6 +62,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={`nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? "bg-primary/15 text-primary border-r-2 border-primary"

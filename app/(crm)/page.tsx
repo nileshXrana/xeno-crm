@@ -107,7 +107,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="p-8 animate-fade-in">
+    <div className="p-4 md:p-8 animate-fade-in">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -127,13 +127,13 @@ export default function DashboardPage() {
 
       {/* Stats Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="h-28 skeleton" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
           <StatCard
             label="Total Campaigns"
             value={stats?.totalCampaigns ?? 0}
