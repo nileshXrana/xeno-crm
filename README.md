@@ -1,150 +1,134 @@
 # Xeno CRM — AI-Native Mini CRM
 
-A full-stack AI-Native Mini CRM built with **Next.js 16**, **TypeScript**, **Tailwind CSS v4**, **shadcn/ui**, and **MongoDB Atlas** via Mongoose.
+An AI-native CRM built for consumer brands to segment shoppers and dispatch highly personalized campaigns. It simulates a decoupled CRM backend and messaging gateway provider to test full-cycle campaign dispatching and webhook ingestion.
 
-## 🚀 Architecture
+---
 
-### Two-Service Simulation (within one repo)
+## Tech Stack
+* **Framework:** Next.js (App Router)
+* **Language:** TypeScript
+* **Styling & UI:** Tailwind CSS & shadcn/ui
+* **Database:** MongoDB (via Mongoose ODM)
+* **AI Engine:** Gemini API (using `gemini-flash-latest`)
 
-| Route Group | Purpose |
-|---|---|
-| `/api/crm/...` | CRM logic: customers, campaigns, audience segmentation, AI message generation |
-| `/api/channel/...` | Stubbed external messaging provider (simulates WhatsApp) |
+---
 
-### Callback-Driven Delivery Loop
+## Core Architecture & The Webhook Loop
+To optimize for deployment simplicity and developer velocity, we logically separated the CRM and Channel services using Next.js API route groups (`/api/crm` and `/api/channel`). This simulates two distinct services running across a network boundary within a single application codebase.
 
+When a campaign is launched, the system goes through an asynchronous loop to execute the campaign, dispatch payloads, calculate delivery outcomes, and ingest delivery receipts:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as CRM Frontend Dashboard
+    participant SendAPI as CRM Send API (/api/crm/campaign/send)
+    participant DB as MongoDB Atlas
+    participant Stub as Channel Stub (/api/channel/send)
+    participant Webhook as CRM Receipt Webhook (/api/crm/webhooks/delivery)
+
+    UI->>SendAPI: Launch Campaign
+    SendAPI->>DB: Save Campaign (SENDING) & create initial CommunicationMessages (PENDING)
+    SendAPI->>Stub: HTTP POST (Recipient Payload)
+    Note over Stub: Calculates random outcome<br/>(80% Delivered, 10% Failed, 10% Unhandled)
+    Note over Stub: Simulates 1s processing delay (Non-blocking)
+    Stub-->>SendAPI: HTTP 200 OK (Acknowledged)
+    Stub->>Webhook: Async HTTP POST (Receipt Callback Payload)
+    Webhook->>DB: Update CommunicationMessage Status (DELIVERED / FAILED)
+    Webhook-->>Stub: HTTP 200 OK
 ```
-User clicks "Send Campaign"
-       ↓
-POST /api/crm/campaign/send
-  → Saves Campaign (SENDING)
-  → Inserts CommunicationMessage per customer (PENDING)
-  → For each message: POST /api/channel/send
-       ↓
-POST /api/channel/send (Channel Stub)
-  → Updates message: SENT
-  → Waits 1 second
-  → Calculates: 80% DELIVERED | 10% FAILED | 10% no callback
-  → POST /api/crm/webhooks/delivery
-       ↓
-POST /api/crm/webhooks/delivery (Receipt Webhook)
-  → Updates CommunicationMessage: DELIVERED or FAILED
-```
 
-## 🛠️ Tech Stack
+### Flow Breakdown
+1. **Initiation:** The marketer triggers campaign execution from the front-end wizard.
+2. **Persistence:** The CRM Send API sets the campaign status to `SENDING` and inserts a `CommunicationMessage` for each matched user with a `PENDING` status.
+3. **Dispatch:** The CRM calls the Channel Stub API route via an HTTP POST request.
+4. **Outcome Simulation:** The Channel Stub marks the message as `SENT` locally, introduces a simulated network delay, and randomly determines the delivery outcome (80% DELIVERED, 10% FAILED, 10% NO CALLBACK).
+5. **Ingestion Loop:** The Channel Stub makes an asynchronous POST call back to the CRM Receipt Webhook with the tracking payload.
+6. **State Resolution:** The CRM Receipt Webhook updates the database status of the corresponding `CommunicationMessage` to `DELIVERED` or `FAILED`.
 
-- **Framework**: Next.js 16.2.9 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4 + shadcn/ui
-- **Database**: MongoDB Atlas via Mongoose
-- **AI**: Google Gemini 1.5 Flash (with graceful fallback)
+---
 
-## 📦 Database Schema
+## The AI-Native Approach
+Our product strategy uses the large language model (Gemini) primarily as a co-pilot for drafting highly personalized messaging based on audience intent and criteria. 
+
+Rather than delegating autonomous decision-making or critical system flow control to an LLM—which can introduce latency, non-deterministic routing, and prompt injection vulnerabilities—we maintain deterministic application business logic. The LLM serves to draft hyper-focused copy variants, preserving a reliable user experience while introducing AI personalization.
+
+---
+
+## Database Schema
+The database uses MongoDB through Mongoose schemas structured as follows:
 
 ### Customer
-```typescript
-{ name, email, phone, totalSpends, visits, lastVisitDate }
-```
+Stores shopper demographic and spending profiles for audience query matching.
+* `name` (String)
+* `email` (String)
+* `phone` (String)
+* `totalSpends` (Number)
+* `visits` (Number)
+* `lastVisitDate` (Date)
 
 ### Order
-```typescript
-{ customerId (ref: Customer), amount, date }
-```
+Tracks customer purchase history.
+* `customerId` (ObjectId, ref: `Customer`)
+* `amount` (Number)
+* `date` (Date)
 
 ### Campaign
-```typescript
-{ name, audienceRules (JSON), size, status: DRAFT|SENDING|SENT, generatedMessage }
-```
+Maintains marketing campaigns and rules configured by the user.
+* `name` (String)
+* `audienceRules` (Mixed/JSON rules array)
+* `size` (Number)
+* `status` (`DRAFT` | `SENDING` | `SENT`)
+* `generatedMessage` (String)
 
 ### CommunicationMessage
-```typescript
-{ campaignId, customerId, status: PENDING|SENT|DELIVERED|FAILED, channel, messageText }
-```
+Logs individual message dispatches and tracks delivery receipt states.
+* `campaignId` (ObjectId, ref: `Campaign`)
+* `customerId` (ObjectId, ref: `Customer`)
+* `status` (`PENDING` | `SENT` | `DELIVERED` | `FAILED`)
+* `channel` (String, default: `"WhatsApp"`)
+* `messageText` (String)
 
-## ⚙️ Setup
+---
 
-### 1. Install dependencies
+## System Design Tradeoffs & Scale Assumptions
+* **Infrastructure Separation:** At scale, the channel service would exist in a completely separate repository/infrastructure, and the webhook ingestion would utilize a message queue (like AWS SQS, Kafka, or Redis) to handle high-throughput delivery callbacks without blocking or dropping requests. For this scope, direct HTTP calls between API routes simulate that network boundary.
+* **Serverless Execution Limits:** Because serverless functions (like Vercel API routes) have execution timeouts, executing database queries and sending batches of HTTP requests in a single serverless function invocation is not viable for large scale. In production, this batching process would be dispatched to background workers or a serverless queue worker (e.g., Ingest, BullMQ, or AWS Lambda + SQS).
+
+---
+
+## Local Setup & Run Instructions
+
+### 1. Clone & Install Dependencies
+Install all package dependencies:
 ```bash
 npm install
 ```
 
-### 2. Configure environment
+### 2. Configure Environment Variables
+Create a `.env.local` file in the root directory:
 ```bash
 cp .env.example .env.local
 ```
 
-Edit `.env.local`:
+Populate the following variables inside `.env.local`:
 ```env
-MONGODB_URI=mongodb+srv://user:password@cluster.mongodb.net/xeno-crm
-GEMINI_API_KEY=your-gemini-api-key-here
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/xeno-crm
+GEMINI_API_KEY=your_gemini_api_key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### 3. Seed demo data
-Start the dev server and visit:
+### 3. Seed Mock Database Data
+Before launching campaigns, you must populate the database with realistic sample customers and order records. Start the dev server and hit the seed endpoint in your browser or client:
 ```
-http://localhost:3000/api/seed
+GET http://localhost:3000/api/seed
 ```
-This inserts 20 realistic customers and 50 random orders.
+*This inserts 20 realistic customers and 50 random orders, establishing the data needed to perform segment matching.*
 
-### 4. Run development server
+### 4. Start the Application
+Run the Next.js development server:
 ```bash
 npm run dev
 ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🌐 API Routes
-
-### CRM Routes
-| Method | Route | Description |
-|---|---|---|
-| `GET` | `/api/seed` | Seed 20 customers + 50 orders |
-| `GET` | `/api/crm/customers` | List all customers |
-| `POST` | `/api/crm/audience` | Check audience size for given rules |
-| `POST` | `/api/crm/generate-message` | Generate AI WhatsApp message via Gemini |
-| `POST` | `/api/crm/campaign/send` | Create and send a campaign |
-| `GET` | `/api/crm/campaign/stats` | Get delivery statistics |
-| `POST` | `/api/crm/webhooks/delivery` | Receive delivery receipt callback |
-
-### Channel Routes
-| Method | Route | Description |
-|---|---|---|
-| `POST` | `/api/channel/send` | Stubbed channel provider (simulates WhatsApp) |
-
-## 🖥️ Pages
-
-| Route | Description |
-|---|---|
-| `/` | Dashboard with stats and quick actions |
-| `/customers` | Customer list with search and revenue summary |
-| `/campaigns` | 3-step campaign wizard (audience → AI message → launch) |
-| `/analytics` | Delivery analytics with expandable campaign rows |
-
-## 🤖 AI Message Generation
-
-When a valid Gemini API key is configured, the `/api/crm/generate-message` endpoint uses **Gemini 1.5 Flash** to generate personalized WhatsApp messages based on:
-- Campaign intent (entered by marketer)
-- Audience criteria (rules)
-- Number of targeted customers
-
-If no API key is set, a high-quality stub message is returned so the demo always works.
-
-## 📊 Audience Builder
-
-The audience builder supports:
-- **Fields**: `totalSpends`, `visits`, `lastVisitDate`
-- **Operators**: `>`, `>=`, `<`, `<=`, `==`
-- **Logic**: AND / OR combinators between rules
-
-## 🔍 Tracing the Async Loop
-
-Watch the terminal output when launching a campaign. You'll see:
-
-```
-[DISPATCH] Sending message <id> to channel stub for customer: Aarav Sharma
-[CHANNEL STUB] 📨 Received message for Aarav Sharma...
-[CHANNEL STUB] ✅ Message <id> marked as SENT.
-[CHANNEL STUB] ⏳ Simulating 1-second delivery delay...
-[CHANNEL STUB] 📬 Outcome: DELIVERED
-[CHANNEL STUB] 🔁 Calling CRM receipt webhook...
-[WEBHOOK] ✅ Message <id> updated to status: DELIVERED
-```
