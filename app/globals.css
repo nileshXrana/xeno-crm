@@ -133,49 +133,69 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Card — light clean surface with subtle shadow */
+/* Glass card design - Stripe/Linear styling */
 .glass-card {
   background: oklch(1 0 0);
-  border: 1px solid oklch(0.88 0.008 265);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 1px 4px oklch(0 0 0 / 0.05), 0 4px 16px oklch(0 0 0 / 0.04);
+  border: 1px solid oklch(0.92 0.005 265);
+  border-radius: 16px;
+  box-shadow: 
+    0 1px 2px oklch(0 0 0 / 0.02), 
+    0 4px 12px oklch(0 0 0 / 0.03),
+    inset 0 0 0 1px oklch(1 0 0 / 0.5);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Gradient text */
+.glass-card:hover {
+  border-color: oklch(0.85 0.010 265);
+}
+
+/* Gradient text - electric violet-purple */
 .gradient-text {
   background: linear-gradient(
     135deg,
-    oklch(0.42 0.20 265),
-    oklch(0.55 0.18 290)
+    oklch(0.48 0.20 265) 0%,
+    oklch(0.58 0.18 290) 100%
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Stat card hover */
+/* Stat card hover with subtle glow border */
 .stat-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, oklch(0.48 0.20 265 / 0.2), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px oklch(0.48 0.20 265 / 0.12);
+  box-shadow: 
+    0 12px 24px -10px oklch(0.48 0.20 265 / 0.08),
+    0 4px 12px oklch(0 0 0 / 0.02);
 }
 
-/* Sidebar nav item */
+/* Sidebar nav item with left accent bar */
 .nav-item {
-  transition: background 0.15s ease, color 0.15s ease;
+  position: relative;
+  transition: all 0.2s ease;
 }
 
 .nav-item:hover {
-  background: oklch(0.91 0.008 265);
-}
-
-.nav-item.active {
-  background: oklch(0.48 0.20 265 / 0.10);
-  color: oklch(0.42 0.20 265);
-  border-right: 2px solid oklch(0.48 0.20 265);
+  background: oklch(0.96 0.003 265);
+  color: oklch(0.18 0.02 265);
 }
 
 /* Rule chip */
@@ -184,35 +204,74 @@
   align-items: center;
   gap: 0.25rem;
   padding: 0.25rem 0.75rem;
-  background: oklch(0.94 0.005 265);
-  border: 1px solid oklch(0.88 0.008 265);
+  background: oklch(0.96 0.003 265);
+  border: 1px solid oklch(0.91 0.008 265);
   border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 500;
-  transition: all 0.15s ease;
+  color: oklch(0.35 0.02 265);
 }
 
 /* Loading skeleton shimmer */
 .skeleton {
   background: linear-gradient(
     90deg,
-    oklch(0.93 0.006 265) 25%,
-    oklch(0.88 0.008 265) 50%,
-    oklch(0.93 0.006 265) 75%
+    oklch(0.96 0.003 265) 25%,
+    oklch(0.91 0.008 265) 50%,
+    oklch(0.96 0.003 265) 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-md);
 }
 
-/* Status badge colors — slightly deeper for light bg readability */
-.status-pending  { color: oklch(0.55 0.15 75);  background: oklch(0.55 0.15 75  / 0.12); }
-.status-sent     { color: oklch(0.42 0.18 220);  background: oklch(0.42 0.18 220 / 0.12); }
-.status-delivered{ color: oklch(0.46 0.16 145);  background: oklch(0.46 0.16 145 / 0.12); }
-.status-failed   { color: oklch(0.52 0.22 25);   background: oklch(0.52 0.22 25  / 0.12); }
+/* Status badge colors — refined soft tones */
+.status-pending   { color: oklch(0.60 0.14 75);  background: oklch(0.97 0.01 75); border: 1px solid oklch(0.60 0.14 75 / 0.15); }
+.status-sent      { color: oklch(0.48 0.16 220); background: oklch(0.95 0.01 220); border: 1px solid oklch(0.48 0.16 220 / 0.15); }
+.status-delivered { color: oklch(0.50 0.15 145); background: oklch(0.95 0.01 145); border: 1px solid oklch(0.50 0.15 145 / 0.15); }
+.status-failed    { color: oklch(0.55 0.20 25);  background: oklch(0.97 0.01 25); border: 1px solid oklch(0.55 0.20 25 / 0.15); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: oklch(0.95 0.004 265); }
-::-webkit-scrollbar-thumb { background: oklch(0.82 0.010 265); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: oklch(0.70 0.012 265); }
+/* WhatsApp Device Mockup styling */
+.phone-frame {
+  border: 10px solid oklch(0.25 0.02 265);
+  border-radius: 32px;
+  box-shadow: 
+    0 20px 40px -15px oklch(0 0 0 / 0.2),
+    inset 0 0 0 2px oklch(1 0 0 / 0.1);
+  overflow: hidden;
+  background: oklch(0.18 0.02 265);
+}
+
+.phone-screen {
+  background-color: #efeae2;
+  background-image: radial-gradient(circle, #e5ddd5 8%, transparent 8.5%);
+  background-size: 14px 14px;
+}
+
+.wa-bubble-out {
+  background-color: #d9fdd3;
+  color: #111b21;
+  border-radius: 8px 0px 8px 8px;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+  position: relative;
+  max-width: 85%;
+  align-self: flex-end;
+}
+
+.wa-bubble-out::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -8px;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-left-color: #d9fdd3;
+  border-top-color: #d9fdd3;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: oklch(0.98 0.003 265); }
+::-webkit-scrollbar-thumb { background: oklch(0.88 0.008 265); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: oklch(0.75 0.012 265); }

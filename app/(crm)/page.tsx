@@ -8,6 +8,11 @@ import {
   XCircle,
   ArrowRight,
   Zap,
+  TrendingUp,
+  Sparkles,
+  Activity,
+  ShieldCheck,
+  Clock,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,32 +39,42 @@ interface DashboardStats {
 function StatCard({
   label,
   value,
+  subtext,
   icon: Icon,
-  color,
+  colorClass,
+  borderColor,
   delay = 0,
 }: {
   label: string;
   value: number | string;
+  subtext?: string;
   icon: React.ElementType;
-  color: string;
+  colorClass: string;
+  borderColor: string;
   delay?: number;
 }) {
   return (
     <div
-      className="stat-card glass-card p-6 animate-fade-in"
+      className="stat-card glass-card p-6 animate-fade-in flex flex-col justify-between h-36"
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">
             {label}
           </p>
-          <p className="text-3xl font-bold text-foreground">{value}</p>
+          <p className="text-3xl font-extrabold text-foreground tracking-tight">{value}</p>
         </div>
-        <div className={`p-3 rounded-xl ${color}`}>
-          <Icon className="w-5 h-5" />
+        <div className={`p-2.5 rounded-xl ${colorClass} ${borderColor} border`}>
+          <Icon className="w-4 h-4" />
         </div>
       </div>
+      {subtext && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2 font-medium">
+          <TrendingUp className="w-3 h-3 text-green-500" />
+          {subtext}
+        </p>
+      )}
     </div>
   );
 }
@@ -92,7 +107,7 @@ export default function DashboardPage() {
           totalDelivered,
           totalFailed,
           totalPending,
-          recentCampaigns: campaigns.slice(0, 5),
+          recentCampaigns: campaigns.slice(0, 4),
         });
       }
     } catch (err) {
@@ -106,153 +121,229 @@ export default function DashboardPage() {
     loadStats();
   }, []);
 
+  const totalDispatched = (stats?.totalDelivered ?? 0) + (stats?.totalFailed ?? 0) + (stats?.totalPending ?? 0);
+  const deliveryRate = totalDispatched > 0 ? Math.round(((stats?.totalDelivered ?? 0) / totalDispatched) * 100) : 0;
+
   return (
-    <div className="p-4 md:p-8 animate-fade-in">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Zap className="w-5 h-5 text-primary" />
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* Dynamic Upper Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border/50 pb-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366f1] to-[#a855f7] flex items-center justify-center shadow-lg shadow-[#6366f1]/20">
+            <Zap className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold gradient-text">
-              Welcome to Xeno CRM
+            <h1 className="text-2xl font-extrabold text-foreground tracking-tight">
+              Control Panel
             </h1>
-            <p className="text-sm text-muted-foreground">
-              AI-Native Customer Relationship Management
+            <p className="text-xs text-muted-foreground font-medium mt-0.5">
+              AI-Native Campaigns & Webhook Loop Orchestration
             </p>
+          </div>
+        </div>
+        
+        {/* Gateway System Status Indicator */}
+        <div className="flex items-center gap-3 px-4 py-2 bg-secondary/30 border border-border/80 rounded-xl">
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </div>
+          <div className="text-left">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase leading-none">Webhook Ingestion</p>
+            <p className="text-xs font-semibold text-emerald-500 mt-1 leading-none">Healthy & Active</p>
           </div>
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Cards Section */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-28 skeleton" />
+            <div key={i} className="h-36 skeleton" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Total Campaigns"
+            label="Active Campaigns"
             value={stats?.totalCampaigns ?? 0}
+            subtext="All systems operational"
             icon={Megaphone}
-            color="bg-primary/10 text-primary"
+            colorClass="bg-primary/5 text-primary"
+            borderColor="border-primary/25"
             delay={0}
           />
           <StatCard
-            label="Messages Delivered"
+            label="Delivered Receipts"
             value={stats?.totalDelivered ?? 0}
+            subtext={`${deliveryRate}% overall success rate`}
             icon={CheckCircle2}
-            color="bg-green-100 text-green-600"
-            delay={80}
+            colorClass="bg-emerald-500/5 text-emerald-600"
+            borderColor="border-emerald-500/25"
+            delay={100}
           />
           <StatCard
-            label="Messages Failed"
+            label="Dropped Deliveries"
             value={stats?.totalFailed ?? 0}
+            subtext="Simulating 10% gateway fail rate"
             icon={XCircle}
-            color="bg-red-100 text-red-500"
-            delay={160}
+            colorClass="bg-red-500/5 text-red-500"
+            borderColor="border-red-500/25"
+            delay={200}
           />
           <StatCard
-            label="Pending Delivery"
+            label="Pending Ingestion"
             value={stats?.totalPending ?? 0}
-            icon={Users}
-            color="bg-amber-100 text-amber-600"
-            delay={240}
+            subtext="Awaiting carrier feedback callbacks"
+            icon={Activity}
+            colorClass="bg-amber-500/5 text-amber-500"
+            borderColor="border-amber-500/25"
+            delay={300}
           />
         </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Link href="/campaigns" className="block">
-          <div className="glass-card p-6 hover:border-primary/40 transition-all cursor-pointer group">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Megaphone className="w-5 h-5 text-primary" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              Create Campaign
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Build audience segments, generate AI messages, and launch campaigns.
-            </p>
-          </div>
-        </Link>
-
-        <Link href="/customers" className="block">
-          <div className="glass-card p-6 hover:border-primary/40 transition-all cursor-pointer group">
-            <div className="flex items-center justify-between mb-3">
-              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center">
-                <Users className="w-5 h-5 text-accent" />
-              </div>
-              <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-accent group-hover:translate-x-0.5 transition-all" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-1">
-              Browse Customers
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              View all customers, spending history, and visit patterns.
-            </p>
-          </div>
-        </Link>
-      </div>
-
-      {/* Recent Campaigns */}
-      {stats && stats.recentCampaigns.length > 0 && (
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-foreground">
-              Recent Campaigns
+      {/* Two-Column Dashboard Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Column 1: Quick Actions & System Info (1 span) */}
+        <div className="space-y-6 lg:col-span-1">
+          <div className="glass-card p-6">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              Quick Actions
             </h2>
-            <Link
-              href="/analytics"
-              className="text-xs text-primary hover:underline"
-            >
-              View all →
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {stats.recentCampaigns.map((c) => {
-              const deliveryRate =
-                c.stats.total > 0
-                  ? Math.round((c.stats.delivered / c.stats.total) * 100)
-                  : 0;
-              return (
-                <div
-                  key={c.campaignId}
-                  className="flex items-center justify-between py-2 border-b border-border last:border-0"
-                >
-                  <div className="flex-1 min-w-0 mr-4">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {c.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {c.stats.total} recipients ·{" "}
-                      {new Date(c.createdAt).toLocaleDateString()}
-                    </p>
+            <div className="space-y-3">
+              <Link href="/campaigns" className="block group">
+                <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 hover:bg-secondary/40 hover:border-primary/30 transition-all flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-foreground">Launch Campaign</h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Filter, draft with AI co-pilot, and dispatch</p>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="w-20 bg-secondary rounded-full h-1.5">
-                      <div
-                        className="h-1.5 rounded-full bg-primary transition-all"
-                        style={{ width: `${deliveryRate}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-muted-foreground w-8 text-right">
-                      {deliveryRate}%
-                    </span>
-                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
                 </div>
-              );
-            })}
+              </Link>
+
+              <Link href="/customers" className="block group">
+                <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 hover:bg-secondary/40 hover:border-primary/30 transition-all flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-foreground">Browse Segments</h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Explore customer database profiles</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                </div>
+              </Link>
+
+              <Link href="/analytics" className="block group">
+                <div className="p-4 rounded-xl bg-secondary/20 border border-border/50 hover:bg-secondary/40 hover:border-primary/30 transition-all flex items-center justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-foreground">Detailed Ingestion Logs</h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Track real-time webhook status</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          <div className="glass-card p-6 bg-linear-to-b from-card to-secondary/10">
+            <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+              Decoupled Gateway stub
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              When a campaign is dispatched, individual requests are routed to the **Channel service stub**. The stub processes messages asynchronously, returning a receipt callback to the **CRM Webhook receiver** after a simulated latency delay.
+            </p>
           </div>
         </div>
-      )}
+
+        {/* Column 2: Recent Campaigns Performance (2 spans) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="glass-card p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-primary animate-pulse" />
+                Campaign Execution Console
+              </h2>
+              <Link
+                href="/analytics"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                Full Analytics <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {loading ? (
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-16 skeleton" />
+                ))}
+              </div>
+            ) : stats && stats.recentCampaigns.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentCampaigns.map((c) => {
+                  const deliveryRate =
+                    c.stats.total > 0
+                      ? Math.round((c.stats.delivered / c.stats.total) * 100)
+                      : 0;
+                  return (
+                    <div
+                      key={c.campaignId}
+                      className="p-4 rounded-xl border border-border/40 bg-secondary/10 hover:bg-secondary/20 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {c.name}
+                          </p>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            c.status === "SENT"
+                              ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                          }`}>
+                            {c.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                          <span>{c.stats.total} target segment</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(c.createdAt).toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3 flex-shrink-0">
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-foreground">{deliveryRate}%</p>
+                          <p className="text-[10px] text-muted-foreground">delivered</p>
+                        </div>
+                        <div className="w-24 bg-secondary rounded-full h-2 overflow-hidden border border-border/30">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
+                            style={{ width: `${deliveryRate}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="py-12 text-center border border-dashed border-border/80 rounded-2xl">
+                <Megaphone className="w-8 h-8 text-muted-foreground/60 mx-auto mb-3" />
+                <p className="text-xs text-foreground font-semibold">No active campaigns</p>
+                <p className="text-[11px] text-muted-foreground mt-1 mb-4">Launch your first campaign segment to see statistics</p>
+                <Link href="/campaigns">
+                  <span className="inline-flex items-center justify-center text-xs font-bold bg-primary text-white hover:bg-primary/95 px-4 py-2 rounded-xl transition-all cursor-pointer">
+                    New Campaign Segment
+                  </span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

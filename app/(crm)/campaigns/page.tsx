@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Megaphone,
   Users,
@@ -11,6 +12,9 @@ import {
   ChevronRight,
   Sparkles,
   MessageSquare,
+  ArrowRight,
+  Smartphone,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,30 +31,28 @@ interface Rule {
 
 type Step = 1 | 2 | 3;
 
-function StepIndicator({ step, current }: { step: Step; current: Step }) {
+function StepIndicator({ step, current, label }: { step: Step; current: Step; label: string }) {
   const isComplete = current > step;
   const isActive = current === step;
   return (
     <div className="flex items-center gap-2">
       <div
-        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+        className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${
           isComplete
-            ? "bg-primary text-primary-foreground"
+            ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
             : isActive
-            ? "bg-primary/20 text-primary border-2 border-primary"
-            : "bg-secondary text-muted-foreground"
+            ? "bg-primary/10 text-primary border border-primary/45 shadow-sm shadow-primary/5"
+            : "bg-secondary/60 text-muted-foreground"
         }`}
       >
         {isComplete ? <CheckCircle2 className="w-4 h-4" /> : step}
       </div>
       <span
-        className={`text-sm font-medium ${
+        className={`text-xs font-bold uppercase tracking-wider ${
           isActive ? "text-foreground" : "text-muted-foreground"
         }`}
       >
-        {step === 1 && "Define Audience"}
-        {step === 2 && "Generate Message"}
-        {step === 3 && "Launch Campaign"}
+        {label}
       </span>
     </div>
   );
@@ -173,291 +175,383 @@ export default function CampaignsPage() {
     }
   }
 
+  // Live WhatsApp Mockup Text Formatter
+  const getMockupMessage = (text: string) => {
+    if (!text) return "";
+    const sampleName = sampleCustomers[0]?.name || "Aarav Sharma";
+    const sampleSpends = sampleCustomers[0]?.totalSpends ? `₹${sampleCustomers[0].totalSpends.toLocaleString()}` : "₹15,000";
+    return text
+      .replace(/\{name\}/g, sampleName)
+      .replace(/\{totalSpends\}/g, sampleSpends)
+      .replace(/\{visits\}/g, "5");
+  };
+
   return (
-    <div className="p-4 md:p-8 animate-fade-in">
+    <div className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-          <Megaphone className="w-5 h-5 text-primary" />
+      <div className="flex items-center gap-4 border-b border-border/50 pb-6">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366f1] to-[#a855f7] flex items-center justify-center shadow-lg shadow-[#6366f1]/20">
+          <Megaphone className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Create Campaign</h1>
-          <p className="text-sm text-muted-foreground">
-            Build audience segments, generate AI messages, and launch
+          <h1 className="text-2xl font-extrabold text-foreground tracking-tight">Campaign Builder</h1>
+          <p className="text-xs text-muted-foreground font-medium mt-0.5">
+            Target dynamic segments, generate copy via Gemini, and track execution dispatch
           </p>
         </div>
       </div>
 
-      {/* Step Indicator */}
-      <div className="flex flex-wrap items-center gap-3 md:gap-4 mb-8">
-        <StepIndicator step={1} current={currentStep} />
-        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        <StepIndicator step={2} current={currentStep} />
-        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-        <StepIndicator step={3} current={currentStep} />
+      {/* Step Indicators */}
+      <div className="flex flex-wrap items-center gap-4 bg-secondary/10 border border-border/40 p-4 rounded-2xl">
+        <StepIndicator step={1} current={currentStep} label="Audience Match" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground hidden sm:block" />
+        <StepIndicator step={2} current={currentStep} label="AI co-pilot" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground hidden sm:block" />
+        <StepIndicator step={3} current={currentStep} label="Review & Dispatch" />
       </div>
 
-      {/* Step 1: Audience Builder */}
-      <div className={`glass-card p-6 mb-4 ${currentStep !== 1 ? "opacity-60" : ""}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
+      {/* STEP 1: Audience Builder View */}
+      {currentStep === 1 && (
+        <div className="glass-card p-6 animate-fade-in space-y-6">
+          <div className="flex items-center gap-2 border-b border-border/30 pb-4">
             <Users className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">
-              Step 1: Define Your Audience
+            <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
+              Step 1: Segment Query Builder
             </h2>
           </div>
-          {currentStep > 1 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setCurrentStep(1)}
-              className="text-xs text-muted-foreground hover:text-foreground"
-            >
-              Edit
-            </Button>
+
+          <AudienceBuilder
+            rules={rules}
+            setRules={setRules}
+            audienceCount={audienceCount}
+            checkingAudience={checkingAudience}
+            onCheckAudience={handleCheckAudience}
+          />
+
+          {audienceCount !== null && sampleCustomers.length > 0 && (
+            <AudiencePreview
+              sampleCustomers={sampleCustomers}
+              totalCount={audienceCount}
+            />
+          )}
+
+          {audienceCount !== null && (
+            <div className="flex justify-end pt-4 border-t border-border/50">
+              <Button
+                onClick={() => setCurrentStep(2)}
+                disabled={audienceCount === 0}
+                className="bg-primary hover:bg-primary/95 text-white font-bold text-xs py-2 px-5 rounded-xl transition-all flex items-center gap-1.5"
+              >
+                Proceed to Message Generation
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           )}
         </div>
+      )}
 
-        <AudienceBuilder
-          rules={rules}
-          setRules={setRules}
-          audienceCount={audienceCount}
-          checkingAudience={checkingAudience}
-          onCheckAudience={handleCheckAudience}
-        />
-
-        {audienceCount !== null && sampleCustomers.length > 0 && (
-          <AudiencePreview
-            sampleCustomers={sampleCustomers}
-            totalCount={audienceCount}
-          />
-        )}
-
-        {audienceCount !== null && currentStep === 1 && (
-          <div className="mt-4 pt-4 border-t border-border flex justify-end">
-            <Button
-              onClick={() => setCurrentStep(2)}
-              disabled={audienceCount === 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              Continue to Message
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Step 2: AI Message Generation */}
-      {currentStep >= 2 && (
-        <div className={`glass-card p-6 mb-4 ${currentStep !== 2 ? "opacity-70" : ""} animate-fade-in`}>
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-accent" />
-              <h2 className="text-sm font-semibold text-foreground">
-                Step 2: AI Message Generation
-              </h2>
-            </div>
-            {currentStep > 2 && (
+      {/* STEP 2: AI Message Generation View (2-Column Grid) */}
+      {currentStep === 2 && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fade-in">
+          {/* Prompt Entry Box (7 spans) */}
+          <div className="lg:col-span-7 glass-card p-6 space-y-6">
+            <div className="flex items-center justify-between border-b border-border/30 pb-4">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                  Step 2: AI Copywriter
+                </h2>
+              </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setCurrentStep(2)}
-                className="text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs font-bold text-muted-foreground hover:text-foreground"
               >
-                Edit
+                Back to Segment
               </Button>
-            )}
-          </div>
-
-          <div className="space-y-4">
-            {/* Intent input */}
-            <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">
-                Campaign Intent
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Input
-                  value={intent}
-                  onChange={(e) => setIntent(e.target.value)}
-                  placeholder="e.g. Offer 10% off on new winter collection"
-                  className="flex-1 bg-secondary border-border"
-                  onKeyDown={(e) => e.key === "Enter" && handleGenerateMessage()}
-                />
-                <Button
-                  onClick={handleGenerateMessage}
-                  disabled={generatingMessage || !intent.trim()}
-                  className="bg-accent hover:bg-accent/90 text-accent-foreground whitespace-nowrap w-full sm:w-auto"
-                >
-                  {generatingMessage ? (
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <Wand2 className="w-4 h-4 mr-2" />
-                  )}
-                  {generatingMessage ? "Generating..." : "Generate with AI"}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Describe your campaign goal — Gemini AI will craft a personalized WhatsApp message.
-              </p>
             </div>
 
-            {/* Generated message preview */}
-            {generatingMessage && (
-              <div className="h-32 skeleton rounded-xl" />
-            )}
-
-            {generatedMessage && !generatingMessage && (
-              <div className="animate-fade-in">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="w-3.5 h-3.5 text-green-400" />
-                  <span className="text-xs text-green-400 font-medium">
-                    Generated WhatsApp Message
-                  </span>
+            <div className="space-y-4">
+              {/* Intent input */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Campaign Offer Intent
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    value={intent}
+                    onChange={(e) => setIntent(e.target.value)}
+                    placeholder="e.g. Offer 15% discount for customers who haven't ordered in 6 months"
+                    className="flex-1 bg-secondary/35 border-border text-xs font-medium h-10 rounded-xl"
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerateMessage()}
+                  />
+                  <Button
+                    onClick={handleGenerateMessage}
+                    disabled={generatingMessage || !intent.trim()}
+                    className="bg-[#6366f1] hover:bg-[#6366f1]/95 text-white font-bold text-xs px-5 h-10 rounded-xl whitespace-nowrap flex items-center gap-1.5 shadow-sm shadow-[#6366f1]/20"
+                  >
+                    {generatingMessage ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-3.5 h-3.5" />
+                    )}
+                    {generatingMessage ? "Writing..." : "Draft with Gemini"}
+                  </Button>
                 </div>
-                <div className="relative">
+              </div>
+
+              {/* Dynamic Guidelines Banner */}
+              <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 flex gap-3">
+                <Info className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-primary leading-relaxed font-medium">
+                  <p className="font-bold mb-1">Personalization Variables Available:</p>
+                  You can include <code className="bg-primary/10 px-1 py-0.5 rounded font-mono font-bold text-[10px]">{`{name}`}</code>, <code className="bg-primary/10 px-1 py-0.5 rounded font-mono font-bold text-[10px]">{`{totalSpends}`}</code> or <code className="bg-primary/10 px-1 py-0.5 rounded font-mono font-bold text-[10px]">{`{visits}`}</code>. Gemini will automatically place them inside the drafted template text.
+                </div>
+              </div>
+
+              {/* Editable Output */}
+              {generatedMessage && !generatingMessage && (
+                <div className="space-y-2 animate-fade-in">
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                      Edit Draft Template
+                    </span>
+                  </div>
                   <textarea
                     value={generatedMessage}
                     onChange={(e) => setGeneratedMessage(e.target.value)}
-                    rows={8}
-                    className="w-full bg-secondary/80 border border-border rounded-xl p-4 text-sm text-foreground font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary"
+                    rows={6}
+                    className="w-full bg-secondary/20 border border-border/80 rounded-xl p-4 text-xs font-semibold text-foreground font-mono resize-none focus:outline-hidden focus:ring-1 focus:ring-primary leading-relaxed"
                   />
-                  <div className="absolute top-2 right-2">
-                    <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">
-                      editable
-                    </span>
+                </div>
+              )}
+
+              {generatedMessage && (
+                <div className="flex justify-end pt-4 border-t border-border/50">
+                  <Button
+                    onClick={() => setCurrentStep(3)}
+                    className="bg-primary hover:bg-primary/95 text-white font-bold text-xs py-2 px-5 rounded-xl transition-all flex items-center gap-1.5"
+                  >
+                    Proceed to Review
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Interactive Phone Frame (5 spans) */}
+          <div className="lg:col-span-5 flex flex-col items-center">
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5" />
+              Live Device Mockup
+            </p>
+            
+            <div className="w-[280px] phone-frame relative">
+              {/* Notch */}
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-center">
+                <span className="w-2.5 h-2.5 rounded-full bg-neutral-900 border border-neutral-800" />
+              </div>
+              
+              <div className="phone-screen h-[480px] pt-8 px-3 pb-4 flex flex-col justify-between">
+                {/* Header Info */}
+                <div className="bg-[#0b141a]/95 text-white text-[10px] p-2.5 rounded-2xl flex items-center gap-2 border border-white/5 shadow-md">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center text-[9px] font-extrabold">
+                    X
+                  </div>
+                  <div>
+                    <p className="font-bold text-[9px]">Xeno CRM Gateway</p>
+                    <p className="text-[7px] text-emerald-400">Verified Business Account</p>
+                  </div>
+                </div>
+
+                {/* Message Stream */}
+                <div className="flex-1 flex flex-col justify-end space-y-2 py-4 overflow-y-auto">
+                  {generatingMessage ? (
+                    <div className="wa-bubble-out p-3 max-w-[85%] self-end">
+                      <div className="flex gap-1 py-1">
+                        <span className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  ) : generatedMessage ? (
+                    <div className="wa-bubble-out p-3 text-[10px] font-medium leading-normal whitespace-pre-wrap">
+                      {getMockupMessage(generatedMessage)}
+                      <p className="text-[8px] text-neutral-500 text-right mt-1.5 font-bold">
+                        {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[9px] text-muted-foreground text-center px-4 leading-relaxed font-semibold italic">
+                      Live preview updates as AI drafts template variants
+                    </p>
+                  )}
+                </div>
+
+                {/* Footer Input Bar */}
+                <div className="bg-[#f0f2f5] p-1.5 rounded-2xl flex items-center gap-2 border border-neutral-300">
+                  <div className="bg-white rounded-xl flex-1 px-3 py-1 text-[8px] text-neutral-400 font-bold border border-neutral-200">
+                    Message...
+                  </div>
+                  <div className="w-5 h-5 rounded-full bg-[#00a884] flex items-center justify-center flex-shrink-0 text-white text-[9px]">
+                    ✓
                   </div>
                 </div>
               </div>
-            )}
-
-            {generatedMessage && currentStep === 2 && (
-              <div className="flex justify-end pt-2 border-t border-border">
-                <Button
-                  onClick={() => setCurrentStep(3)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  Continue to Launch
-                  <ChevronRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Step 3: Launch Campaign */}
-      {currentStep >= 3 && (
-        <div className="glass-card p-6 animate-fade-in">
-          <div className="flex items-center gap-2 mb-4">
-            <Send className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">
-              Step 3: Launch Campaign
-            </h2>
+      {/* STEP 3: Launch Campaign View */}
+      {currentStep === 3 && (
+        <div className="glass-card p-6 animate-fade-in space-y-6">
+          <div className="flex items-center justify-between border-b border-border/30 pb-4">
+            <div className="flex items-center gap-2">
+              <Send className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                Step 3: Review & Dispatch
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentStep(2)}
+              className="text-xs font-bold text-muted-foreground hover:text-foreground"
+            >
+              Back to Editor
+            </Button>
           </div>
 
           {launchResult ? (
             <div
-              className={`p-5 rounded-xl border ${
+              className={`p-6 rounded-2xl border ${
                 launchResult.success
-                  ? "bg-green-500/10 border-green-500/30"
-                  : "bg-destructive/10 border-destructive/30"
-              } animate-fade-in`}
+                  ? "bg-emerald-500/5 border-emerald-500/25"
+                  : "bg-red-500/5 border-red-500/25"
+              } animate-fade-in space-y-4`}
             >
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-3">
                 {launchResult.success ? (
-                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                  </div>
                 ) : (
-                  <span className="text-destructive">❌</span>
+                  <div className="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                    <span className="text-red-500 font-bold text-sm">!</span>
+                  </div>
                 )}
-                <p className="text-sm font-semibold text-foreground">
-                  {launchResult.success ? "Campaign Launched! 🚀" : "Launch Failed"}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {launchResult.message}
-              </p>
-              {launchResult.success && launchResult.campaignId && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <p className="text-xs text-muted-foreground">
-                    Campaign ID:{" "}
-                    <span className="text-primary font-mono">
-                      {launchResult.campaignId}
-                    </span>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">
+                    {launchResult.success ? "Campaign Handed Over to Gateway 🚀" : "Execution Halted"}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground font-semibold uppercase mt-0.5">
+                    {launchResult.success ? "Ingestion pipeline initialized" : "System exception"}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    📊 Check delivery status in the{" "}
-                    <a href="/analytics" className="text-primary hover:underline">
-                      Analytics page
-                    </a>
-                    .
-                  </p>
-                </div>
-              )}
-              {launchResult.success && (
-                <Button
-                  onClick={() => {
-                    setLaunchResult(null);
-                    setCampaignName("");
-                    setGeneratedMessage("");
-                    setIntent("");
-                    setAudienceCount(null);
-                    setCurrentStep(1);
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="mt-3 border-border hover:bg-secondary"
-                >
-                  Create Another Campaign
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Campaign summary */}
-              <div className="p-4 bg-secondary/50 rounded-xl border border-border/50 space-y-2">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
-                  Campaign Summary
-                </p>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Audience Size</span>
-                  <span className="text-primary font-bold">
-                    {audienceCount ?? 0} customers
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Channel</span>
-                  <span className="text-foreground">WhatsApp</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rules</span>
-                  <span className="text-foreground">{rules.length} condition(s)</span>
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">
-                  Campaign Name *
+              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+                {launchResult.message}
+              </p>
+
+              {launchResult.success && launchResult.campaignId && (
+                <div className="pt-4 border-t border-border/40 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground font-medium">Internal Tracker ID:</span>
+                    <span className="font-mono font-bold text-primary">{launchResult.campaignId}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+                    <Link href="/analytics" className="flex-1">
+                      <Button className="w-full bg-primary hover:bg-primary/95 text-white text-xs font-bold py-2 rounded-xl transition-all">
+                        Monitor Live Ingestion Log
+                      </Button>
+                    </Link>
+                    <Button
+                      onClick={() => {
+                        setLaunchResult(null);
+                        setCampaignName("");
+                        setIntent("");
+                        setGeneratedMessage("");
+                        setAudienceCount(null);
+                        setSampleCustomers([]);
+                        setCurrentStep(1);
+                      }}
+                      variant="outline"
+                      className="border-border hover:bg-secondary text-xs font-bold py-2 px-5 rounded-xl transition-all"
+                    >
+                      Draft New Campaign
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Campaign summary review card */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-secondary/10 border border-border/40 p-5 rounded-2xl">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Campaign Name</p>
+                  <p className="text-xs font-bold text-foreground mt-1.5">
+                    {campaignName || "Untitled AI Campaign"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Matched Audience</p>
+                  <p className="text-xs font-bold text-foreground mt-1.5">
+                    {audienceCount?.toLocaleString()} shoppers in segment
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Dispatch Channel</p>
+                  <p className="text-xs font-bold text-foreground mt-1.5">
+                    WhatsApp Cloud API (Simulated Gateway)
+                  </p>
+                </div>
+              </div>
+
+              {/* Form Input for naming campaign */}
+              <div className="space-y-2 max-w-md">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Assign Campaign Name
                 </label>
                 <Input
                   value={campaignName}
                   onChange={(e) => setCampaignName(e.target.value)}
-                  placeholder="e.g. Winter Sale 2025 – High Spenders"
-                  className="bg-secondary border-border"
+                  placeholder="e.g. Winter Sale Warm Segment v1"
+                  className="bg-secondary/35 border-border text-xs font-medium h-10 rounded-xl"
                 />
+                <p className="text-[10px] text-muted-foreground">
+                  Give the campaign a descriptive name to track its delivery metrics in the logs.
+                </p>
               </div>
 
-              <Button
-                onClick={handleLaunchCampaign}
-                disabled={launching || !campaignName.trim()}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground animate-pulse-glow"
-              >
-                {launching ? (
-                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4 mr-2" />
-                )}
-                {launching ? "Launching..." : `Launch Campaign to ${audienceCount ?? 0} Customers`}
-              </Button>
+              {/* Message template review box */}
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Message template text</p>
+                <div className="bg-secondary/20 p-4 rounded-xl border border-border/50 text-xs font-semibold text-foreground font-mono leading-relaxed">
+                  {generatedMessage}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end pt-4 border-t border-border/50">
+                <Button
+                  onClick={handleLaunchCampaign}
+                  disabled={launching || !campaignName.trim() || !generatedMessage}
+                  className="bg-emerald-600 hover:bg-emerald-600/95 text-white font-bold text-xs py-2 px-6 rounded-xl transition-all flex items-center gap-1.5 shadow-sm shadow-emerald-600/20"
+                >
+                  {launching ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
+                  {launching ? "Sending batches..." : "Dispatch Campaign"}
+                </Button>
+              </div>
             </div>
           )}
         </div>

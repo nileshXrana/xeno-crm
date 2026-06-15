@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, Users, Wand2, Send, RefreshCw, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Users, RefreshCw, Sparkles, Coins, Calendar, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 
 interface Rule {
   id: string;
@@ -22,9 +20,9 @@ interface Rule {
 }
 
 const FIELDS = [
-  { value: "totalSpends", label: "Total Spends (₹)" },
-  { value: "visits", label: "Number of Visits" },
-  { value: "lastVisitDate", label: "Last Visit Date" },
+  { value: "totalSpends", label: "Total Spends (₹)", icon: Coins },
+  { value: "visits", label: "Visits Count", icon: Activity },
+  { value: "lastVisitDate", label: "Last Visit Date", icon: Calendar },
 ];
 
 const OPERATORS = [
@@ -68,6 +66,7 @@ export default function AudienceBuilder({
   }
 
   function removeRule(id: string) {
+    if (rules.length === 1) return; // Keep at least one condition
     setRules((prev) => prev.filter((r) => r.id !== id));
   }
 
@@ -78,134 +77,140 @@ export default function AudienceBuilder({
   }
 
   return (
-    <div className="space-y-4">
-      {/* Rules */}
-      <div className="space-y-3">
-        {rules.map((rule, idx) => (
-          <div key={rule.id} className="animate-slide-in-left">
-            {/* Logic connector between rules */}
-            {idx > 0 && (
-              <div className="flex items-center gap-2 my-2">
-                <div className="flex-1 h-px bg-border" />
-                <Select
-                  value={rules[idx - 1].logic}
-                  onValueChange={(v) => v && updateRule(rules[idx - 1].id, "logic", v)}
+    <div className="space-y-6">
+      {/* Visual Rule Node List */}
+      <div className="relative pl-4 border-l border-border/80 ml-2 space-y-4">
+        {rules.map((rule, idx) => {
+          const matchedField = FIELDS.find(f => f.value === rule.field) || FIELDS[0];
+          const FieldIcon = matchedField.icon;
+
+          return (
+            <div key={rule.id} className="relative animate-slide-in-left">
+              {/* Connector Node Indicator Dot */}
+              <div className="absolute -left-[21px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-primary border-2 border-background z-10" />
+
+              {/* Logic Connector Ribbon between rules */}
+              {idx > 0 && (
+                <div className="absolute -top-6 -left-[20px] h-6 flex items-center justify-center">
+                  <Select
+                    value={rules[idx - 1].logic}
+                    onValueChange={(v) => v && updateRule(rules[idx - 1].id, "logic", v)}
+                  >
+                    <SelectTrigger className="w-16 h-5 text-[9px] font-extrabold uppercase bg-secondary/90 hover:bg-secondary border border-border/80 rounded-full px-2 shadow-xs transition-colors z-20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      <SelectItem value="AND" className="text-[10px] font-bold">AND</SelectItem>
+                      <SelectItem value="OR" className="text-[10px] font-bold">OR</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* Node Card wrapper */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-secondary/15 rounded-2xl border border-border/40 hover:border-border transition-all">
+                {/* Field Selector */}
+                <div className="flex-1 w-full flex items-center gap-2.5 bg-secondary/35 border border-border/30 rounded-xl px-3 py-1">
+                  <FieldIcon className="w-4 h-4 text-muted-foreground" />
+                  <Select
+                    value={rule.field}
+                    onValueChange={(v) => v && updateRule(rule.id, "field", v)}
+                  >
+                    <SelectTrigger className="bg-transparent border-0 ring-0 focus:ring-0 text-xs font-bold text-foreground h-8 p-0 flex-1 hover:bg-transparent">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      {FIELDS.map((f) => (
+                        <SelectItem key={f.value} value={f.value} className="text-xs font-semibold">
+                          {f.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Operator Selector */}
+                <div className="w-full sm:w-44 bg-secondary/35 border border-border/30 rounded-xl px-3 py-1">
+                  <Select
+                    value={rule.operator}
+                    onValueChange={(v) => v && updateRule(rule.id, "operator", v)}
+                  >
+                    <SelectTrigger className="bg-transparent border-0 ring-0 focus:ring-0 text-xs font-bold text-foreground h-8 p-0 flex-1 hover:bg-transparent">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border">
+                      {OPERATORS.map((op) => (
+                        <SelectItem key={op.value} value={op.value} className="text-xs font-semibold">
+                          {op.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Value Input */}
+                <div className="w-full sm:w-36 bg-secondary/35 border border-border/30 rounded-xl px-3 py-1 flex items-center">
+                  <Input
+                    value={rule.value}
+                    onChange={(e) => updateRule(rule.id, "value", e.target.value)}
+                    placeholder={rule.field === "lastVisitDate" ? "YYYY-MM-DD" : "Value"}
+                    className="bg-transparent border-0 text-xs font-bold h-8 p-0 w-full focus-visible:ring-0"
+                    type={rule.field === "lastVisitDate" ? "date" : "number"}
+                  />
+                </div>
+
+                {/* Remove Condition */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeRule(rule.id)}
+                  disabled={rules.length === 1}
+                  className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 self-end sm:self-auto flex-shrink-0 rounded-xl transition-all"
                 >
-                  <SelectTrigger className="w-20 h-7 text-xs bg-secondary border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
-                    <SelectItem value="AND">AND</SelectItem>
-                    <SelectItem value="OR">OR</SelectItem>
-                  </SelectContent>
-                </Select>
-                <div className="flex-1 h-px bg-border" />
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 p-3.5 bg-secondary/50 rounded-xl border border-border/50">
-              {/* Field selector */}
-              <div className="flex-1 w-full">
-                <Select
-                  value={rule.field}
-                  onValueChange={(v) => v && updateRule(rule.id, "field", v)}
-                >
-                  <SelectTrigger className="w-full bg-secondary border-border text-sm h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
-                    {FIELDS.map((f) => (
-                      <SelectItem key={f.value} value={f.value}>
-                        {f.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Operator selector */}
-              <div className="w-full sm:w-44">
-                <Select
-                  value={rule.operator}
-                  onValueChange={(v) => v && updateRule(rule.id, "operator", v)}
-                >
-                  <SelectTrigger className="w-full bg-secondary border-border text-sm h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
-                    {OPERATORS.map((op) => (
-                      <SelectItem key={op.value} value={op.value}>
-                        {op.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Value input */}
-              <div className="w-full sm:w-36">
-                <Input
-                  value={rule.value}
-                  onChange={(e) => updateRule(rule.id, "value", e.target.value)}
-                  placeholder={rule.field === "lastVisitDate" ? "YYYY-MM-DD" : "Enter value"}
-                  className="w-full bg-secondary border-border text-sm h-9"
-                  type={rule.field === "lastVisitDate" ? "date" : "number"}
-                />
-              </div>
-
-              {/* Remove button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removeRule(rule.id)}
-                className="h-9 w-9 text-muted-foreground hover:text-destructive hover:bg-destructive/10 self-end sm:self-auto flex-shrink-0"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Add Rule */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={addRule}
-        className="border-dashed border-border hover:border-primary hover:text-primary text-muted-foreground"
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        Add Condition
-      </Button>
-
-      {/* Check Audience */}
-      <div className="flex items-center gap-3 pt-2">
+      {/* Button Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <Button
-          onClick={onCheckAudience}
-          disabled={checkingAudience || rules.length === 0 || rules.some((r) => !r.value)}
           variant="outline"
-          className="border-primary/40 text-primary hover:bg-primary/10"
+          size="sm"
+          onClick={addRule}
+          className="border-dashed border-border/80 hover:border-primary/80 hover:text-primary text-xs font-bold py-2 px-4 rounded-xl transition-all w-full sm:w-auto"
         >
-          {checkingAudience ? (
-            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Users className="w-4 h-4 mr-2" />
-          )}
-          {checkingAudience ? "Checking..." : "Check Audience Size"}
+          <Plus className="w-3.5 h-3.5 mr-2" />
+          Add Condition Rule
         </Button>
 
-        {audienceCount !== null && (
-          <div className="flex items-center gap-2 animate-fade-in">
-            <div className="h-8 w-px bg-border" />
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/20">
-              <Users className="w-3.5 h-3.5 text-primary" />
-              <span className="text-sm font-bold text-primary">
-                {audienceCount}
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <Button
+            onClick={onCheckAudience}
+            disabled={checkingAudience || rules.length === 0 || rules.some((r) => !r.value)}
+            className="bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 text-xs font-bold py-2 px-4 rounded-xl transition-all w-full sm:w-auto"
+          >
+            {checkingAudience ? (
+              <RefreshCw className="w-3.5 h-3.5 mr-2 animate-spin" />
+            ) : (
+              <Users className="w-3.5 h-3.5 mr-2" />
+            )}
+            {checkingAudience ? "Querying Database..." : "Compile Segment Size"}
+          </Button>
+
+          {audienceCount !== null && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/15 rounded-xl animate-fade-in shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+              <span className="text-xs font-extrabold text-primary">
+                {audienceCount.toLocaleString()}
               </span>
-              <span className="text-xs text-muted-foreground">customers</span>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">matched</span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
