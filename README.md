@@ -55,6 +55,18 @@ Rather than delegating autonomous decision-making or critical system flow contro
 
 ---
 
+## Authentication & Route Security
+To protect customer profiles and telemetry data, the CRM utilizes a zero-dependency JWT authentication gate built with standard Web Crypto APIs (`crypto.subtle`) and Next.js Middleware.
+
+* **Session Tokens:** On valid authentication, the CRM issues a signed HMAC-SHA256 JWT cookie (`token`) marked as `HttpOnly`, `Secure`, and `SameSite=Lax` to prevent client-side token leaks.
+* **Middleware Interceptor:** A global `middleware.ts` guards dashboard, customer, builder, and analytics pages, routing unauthenticated visitors to `/login`.
+* **API Protection:** Inquiries targeting protected endpoints (`/api/crm/...`) return a `401 Unauthorized` JSON payload to fetch clients when sessions are invalid, bypassing public webhook callbacks and data seeders.
+* **Recruiter Demo Access:** A guide box presents credentials directly on the login interface for quick testing:
+  - **Username:** `admin@xeno.co` (or `admin`)
+  - **Password:** `admin123`
+
+---
+
 ## Database Schema
 The database uses MongoDB through Mongoose schemas structured as follows:
 
@@ -116,6 +128,7 @@ Populate the following variables inside `.env.local`:
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/xeno-crm
 GEMINI_API_KEY=your_gemini_api_key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+JWT_SECRET=your_custom_jwt_secret_key_here
 ```
 
 ### 3. Seed Mock Database Data
