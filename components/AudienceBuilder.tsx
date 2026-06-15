@@ -89,7 +89,7 @@ export default function AudienceBuilder({
                 <div className="flex-1 h-px bg-border" />
                 <Select
                   value={rules[idx - 1].logic}
-                  onValueChange={(v) => updateRule(rules[idx - 1].id, "logic", v)}
+                  onValueChange={(v) => v && updateRule(rules[idx - 1].id, "logic", v)}
                 >
                   <SelectTrigger className="w-20 h-7 text-xs bg-secondary border-border">
                     <SelectValue />
@@ -107,7 +107,7 @@ export default function AudienceBuilder({
               {/* Field selector */}
               <Select
                 value={rule.field}
-                onValueChange={(v) => updateRule(rule.id, "field", v)}
+                onValueChange={(v) => v && updateRule(rule.id, "field", v)}
               >
                 <SelectTrigger className="flex-1 bg-secondary border-border text-sm h-9">
                   <SelectValue />
@@ -124,7 +124,7 @@ export default function AudienceBuilder({
               {/* Operator selector */}
               <Select
                 value={rule.operator}
-                onValueChange={(v) => updateRule(rule.id, "operator", v)}
+                onValueChange={(v) => v && updateRule(rule.id, "operator", v)}
               >
                 <SelectTrigger className="w-44 bg-secondary border-border text-sm h-9">
                   <SelectValue />
